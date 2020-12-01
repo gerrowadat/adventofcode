@@ -17,7 +17,7 @@ sys	0m0.008s
 ```
 
 Similarly, not sorting and going straight in brute force also has negligible outcomes
-(although it happened to be faster on this run so ¯\_(ツ)_/¯)
+(although it happened to be faster on this run so ¯\\_(ツ)_/¯)
 
 ```
 doc@lion:~/git/adventofcode/2020/1$ time python 1-1-unsorted.py input.txt 
