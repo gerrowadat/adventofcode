@@ -12,14 +12,10 @@ numbers = []
 for l in lines:
   numbers.append(int(l.strip('\n')))
 
-snums = sorted(numbers)
-
 # ok, slightly refined brute force.
 
-messy_result = [[snums[x] for x in range(0, len(snums)) if snums[x] + snums[y] == 2020 ] for y in range(0, len(snums))]
+result = [n for n in [[numbers[x] for x in range(0, len(numbers)) if numbers[x] + numbers[y] == 2020 ] for y in range(0, len(numbers))] if n]
 
-clean_result = [x for x in messy_result if x]
-
-print('%d * %d == %d' % (clean_result[0][0], clean_result[1][0], (clean_result[0][0] * clean_result[1][0])))
+print('%d * %d == %d' % (result[0][0], result[1][0], (result[0][0] * result[1][0])))
 
 
