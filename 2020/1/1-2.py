@@ -12,8 +12,6 @@ numbers = []
 for l in lines:
   numbers.append(int(l.strip('\n')))
 
-sorted_nums = sorted(numbers)
-
 # remove all refinement
 
 for i in numbers:
