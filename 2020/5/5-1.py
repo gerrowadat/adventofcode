@@ -34,7 +34,7 @@ class BoardingPass(object):
         max_val = (max_val + min_val) / 2
         print ('max to %d' % (max_val, ))
       if c == upper:
-        min_val = (max_val + min_val) / 2 +1
+        min_val = ((max_val + min_val) / 2) + 1
         print ('min to %d' % (min_val, ))
     if min_val != max_val:
       raise ValueError('unsuccessful reduce: %d != %d' % (min_val, max_val))
