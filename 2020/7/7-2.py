@@ -1,5 +1,4 @@
 import re
-import sys
 
 def parserule(rule):
   """Return (outer: (inner: inner_count) ...))"""
@@ -23,9 +22,6 @@ def bag_count(rules, colour):
   print('a %s bag is actually %d bags' % (colour, count))
   return count
     
-if len(sys.argv) > 1:
-  print parserule(sys.argv[1])
-
 with open("input.txt") as f:
   lines = f.readlines()
 
