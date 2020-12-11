@@ -1,16 +1,12 @@
-def diag(plan, i, j, i_step, j_step, verbose=False):
+def diag(plan, i, j, i_step, j_step):
   here_i = i
   here_j = j
   while (0 <= here_i < len(plan)) and (0 <= here_j < len(plan[0])):
-    if verbose:
-      print(' - %d,%d: %s' % (here_i, here_j, plan[here_i][here_j]))
     if plan[here_i][here_j] in ('L', '#'):
       if not (here_i == i and here_j == j):
         return [here_i, here_j]
     here_i += i_step
     here_j += j_step
-    if verbose:
-      print('%d,%d considering %d,%d' % (i, j, here_i, here_j))
   return []
 
 def seen_seats(plan, i, j):
