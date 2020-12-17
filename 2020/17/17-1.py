@@ -1,27 +1,7 @@
-def neighbours(z,x,y):
-  n = [] 
-  for z_loc in (z-1, z, z+1):
-    for x_loc in (x-1, x, x+1):
-      for y_loc in (self.y-1, self.y, self.y+1):
-        if not (z == z_loc and x == x_loc and y == y_loc):
-          n.append((z,x,y))
-  return n
-
-
 class Grid(object):
   def __init__(self):
     self._p = {}
 
-  def __str__(self):
-    ret = ''
-    for z in range(min(self._p), max(self._p)+1):
-      ret += 'z=%d\n' % (z, )
-      for x in range(0, len(self._p[z])):
-        for y in range(0, len(self._p[z][x])):
-          ret += '#' if self.get(z,x,y) else '.'
-        ret += '\n'
-    return ret
-      
   def get(self, z, x, y):
     if z not in self._p or x not in self._p[z] or y not in self._p[z][x]:
       return False
@@ -45,12 +25,6 @@ class Grid(object):
             act.append((z,x,y))
     return act
           
-  def get_inactive(self):
-    return [p for p in self._p if not p.active]
-
-  def set_active(self, z, x, y):
-    self.set_point(z,x,y,True)
-    
   def set_point(self, z, x, y, val):
     if z not in self._p:
       self._p[z] = {}
@@ -145,16 +119,12 @@ def main():
       y += 1
     x += 1
 
-  print(grid)
-
   grid.cycle()
   grid.cycle()
   grid.cycle()
   grid.cycle()
   grid.cycle()
   grid.cycle()
-
-  #print(grid)
 
   print('Active: %d' % len(grid.get_active()))
 
