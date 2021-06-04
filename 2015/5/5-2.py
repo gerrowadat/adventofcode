@@ -2,12 +2,14 @@ import sys
 
 def repeats(word):
   reps = {}
-  for i in range(0, len(word) - 1):
+  for i in range(0, len(word)-1):
     pair = word[i:i+2]
     pair_count = len([i for i in range(0, len(word) -1) if word[i:i+2] == pair])
     pair_idx = [i for i in range(0, len(word) -1) if word[i:i+2] == pair]
-    if pair_count > 1 and abs(pair_idx[0] - pair_idx[1]) != 1 :
-      reps[pair] = True
+    if pair_count > 1:
+      for idx in pair_idx:
+        if idx != i and abs(idx - i) != 1 :
+          reps[pair] = True
   return reps.keys()
 
 def sandwiches(word):
@@ -26,7 +28,7 @@ def is_nice(word):
   if nyom:
     print(' - sandwiches: %s' % (nyom, ))
 
-  if not rep or not nyom:
+  if not (rep and nyom):
     return False
 
   return True
