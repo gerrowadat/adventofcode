@@ -12,5 +12,8 @@ func getFileLines(filename string) ([]string) {
         fmt.Println("Error reading %v : %v", filename, err)
         os.Exit(1)
     }
-    return strings.Split(string(content), "\n")
+
+    lines := strings.Split(string(content), "\n")
+    return lines[:len(lines)-1]
+
 }
