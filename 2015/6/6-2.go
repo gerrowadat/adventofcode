@@ -11,7 +11,7 @@ type Coord struct {
     x, y int
 }
 
-type CoordField [1000][1000]bool
+type CoordField [1000][1000]int
 
 
 func getCoordsFromRaw(raw string) (Coord) {
@@ -39,25 +39,23 @@ func getCoordsToUpdate(from Coord, to Coord) ([]Coord) {
 func toggleLights(l *CoordField, from Coord, to Coord) {
     all_Coords := getCoordsToUpdate(from, to)
     for _, c := range all_Coords {
-        if l[c.x][c.y] == true {
-            l[c.x][c.y] = false
-        } else {
-            l[c.x][c.y] = true
-        }
+        l[c.x][c.y] += 2
     }
 }
 
 func turnOnLights(l *CoordField, from Coord, to Coord) {
     all_Coords := getCoordsToUpdate(from, to)
     for _, c := range all_Coords {
-        l[c.x][c.y] = true
+        l[c.x][c.y] += 1
     }
 }
 
 func turnOffLights(l *CoordField, from Coord, to Coord) {
     all_coords := getCoordsToUpdate(from, to)
     for _, c := range all_coords {
-        l[c.x][c.y] = false
+        if l[c.x][c.y] > 0 {
+            l[c.x][c.y] -= 1
+        }
     }
 }
 
@@ -86,7 +84,7 @@ func main() {
 
     for i := 0; i < 1000; i++ {
         for j := 0; j < 1000; j++ {
-            lights[i][j] = false
+            lights[i][j] = 0
         }
     }
     for _ , str := range getFileLines("input.txt") {
@@ -97,12 +95,10 @@ func main() {
 
     for l, _ := range lights {
         for w, _ := range lights[l] {
-            if lights[l][w] == true {
-                lit++
-            }
+            lit += lights[l][w]
         }
     }
 
-    fmt.Printf("Lit: %d\n", lit)
+    fmt.Printf("Total Brightness: %d\n", lit)
 
 }
