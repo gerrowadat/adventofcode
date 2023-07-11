@@ -1,3 +1,4 @@
+x AND y -> q
 123 -> x
 456 -> y
 x AND y -> d
