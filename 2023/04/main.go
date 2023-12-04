@@ -98,20 +98,40 @@ func parseCard(raw string) *Card {
 	return ret
 }
 
+func recursivePlay(all map[int]*Card, c *Card) int {
+	ret := 1
+
+	if c.wins() == 0 {
+		return ret
+	}
+
+	for i := 1; i <= c.wins(); i++ {
+		ret += recursivePlay(all, all[c.id+i])
+	}
+
+	return ret
+}
+
 func main() {
 	instructions := getFileLines("input.txt")
 
-	cards := []*Card{}
+	//cards := []*Card{}
+	cards := map[int]*Card{}
 
 	for _, line := range instructions {
-		cards = append(cards, parseCard(line))
+		c := parseCard(line)
+		cards[c.id] = c
 	}
 
-	total := 0
+	score_total := 0
+	play_total := 0
 	for _, c := range cards {
-		total = total + c.score()
+		score_total = score_total + c.score()
+		play_total = play_total + recursivePlay(cards, c)
 		printCard(c)
 	}
 
-	fmt.Printf("Part 1: %d\n", total)
+	fmt.Printf("Part 1: %d\n", score_total)
+	fmt.Printf("Part 2: %d\n", play_total)
+
 }
