@@ -12,6 +12,30 @@ type Card struct {
 	numbers []int
 }
 
+func (c *Card) wins() int {
+	ret := 0
+	for _, n := range c.numbers {
+		for _, w := range c.winners {
+			if n == w {
+				ret++
+			}
+		}
+	}
+	return ret
+}
+
+func (c *Card) score() int {
+	wins := c.wins()
+	if wins == 0 {
+		return 0
+	}
+	score := 1
+	for i := 0; i < wins-1; i++ {
+		score = score * 2
+	}
+	return score
+}
+
 func printCard(c *Card) {
 	fmt.Printf("Card %d: ", c.id)
 	for _, w := range c.winners {
@@ -39,7 +63,7 @@ func printCard(c *Card) {
 			fmt.Printf("%d ", n)
 		}
 	}
-	fmt.Printf("= %d (%d winners)\n", score, winnercount)
+	fmt.Printf("= %d (%d winners)\n", c.score(), c.wins())
 }
 
 func numstrToIntSlice(raw string) []int {
@@ -74,22 +98,6 @@ func parseCard(raw string) *Card {
 	return ret
 }
 
-func scoreCard(c *Card) int {
-	ret := 0
-	for _, n := range c.numbers {
-		for _, w := range c.winners {
-			if n == w {
-				if ret == 0 {
-					ret = 1
-				} else {
-					ret = ret * 2
-				}
-			}
-		}
-	}
-	return ret
-}
-
 func main() {
 	instructions := getFileLines("input.txt")
 
@@ -101,7 +109,7 @@ func main() {
 
 	total := 0
 	for _, c := range cards {
-		total = total + scoreCard(c)
+		total = total + c.score()
 		printCard(c)
 	}
 
