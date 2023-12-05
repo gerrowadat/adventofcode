@@ -14,15 +14,16 @@ type AlmanacMap struct {
 	entries []*MapEntry
 }
 
+type SeedRange struct {
+	start, size int
+}
+
 func (m *AlmanacMap) get(i int) int {
 	for _, e := range m.entries {
-		//fmt.Printf(" + src %d dest %d range %d\n", e.src, e.dest, e.range_len)
 		if e.src <= i && i <= e.src+e.range_len {
-			//fmt.Printf(" -- %d falls between %d and %d :  %d -> %d\n", i, e.src, e.src+e.range_len, i, e.dest+e.range_len)
 			return e.dest + (i - e.src)
 		}
 	}
-	//fmt.Printf(" -- %d -> %d\n", i, i)
 	return i
 }
 
@@ -49,12 +50,11 @@ func (m *AlmanacMap) load_raw_entry(raw string) {
 		return
 	}
 
-	fmt.Printf(" --- src %d dest %d range %d\n", src_start, dest_start, range_len)
 	m.entries = append(m.entries, &MapEntry{
 		src: src_start, dest: dest_start, range_len: range_len})
 }
 
-func getSeedList(raw string) []int {
+func getSimpleSeedList(raw string) []int {
 	strlist := strings.Fields(strings.Split(raw, ":")[1])
 	ret := []int{}
 	for _, i := range strlist {
@@ -67,6 +67,23 @@ func getSeedList(raw string) []int {
 	return ret
 }
 
+func getRangedSeedList(raw string) []*SeedRange {
+	strlist := strings.Fields(strings.Split(raw, ":")[1])
+	ret := []*SeedRange{}
+	nums := []int{}
+	for _, i := range strlist {
+		j, err := strconv.Atoi(i)
+		if err != nil {
+			fmt.Printf("Funny-looking seed number '%s'\n", i)
+		}
+		nums = append(nums, j)
+	}
+	for i := 0; i < len(nums); i += 2 {
+		ret = append(ret, &SeedRange{start: nums[i], size: nums[i+1]})
+	}
+	return ret
+}
+
 func getMap(raw []string, mapname *string) *AlmanacMap {
 	ret := &AlmanacMap{}
 
@@ -75,7 +92,6 @@ func getMap(raw []string, mapname *string) *AlmanacMap {
 	scanning := false
 	for i, l := range raw {
 		if l == want {
-			fmt.Printf("Found %s, scanning...\n", *mapname)
 			scanning = true
 			continue
 		}
@@ -85,7 +101,6 @@ func getMap(raw []string, mapname *string) *AlmanacMap {
 				return ret
 			}
 			// Otherwise load the next line into the AlmanacMap
-			fmt.Printf(" - %s\n", l)
 			ret.load_raw_entry(l)
 		}
 	}
@@ -95,10 +110,55 @@ func getMap(raw []string, mapname *string) *AlmanacMap {
 	return nil
 }
 
+func getClosestLocationList(seeds []int, maps map[string]*AlmanacMap, mapnames []string) int {
+	ret := 0
+	for _, s := range seeds {
+		val := s
+		for _, m := range mapnames {
+			//old_val := val
+			val = maps[m].get(val)
+			//fmt.Printf(" == %d -> %s -> %d\n", old_val, m, val)
+
+		}
+		if ret == 0 || val < ret {
+			ret = val
+		}
+	}
+	return ret
+}
+
+func getClosestLocationRange(seed_ranges []*SeedRange, maps map[string]*AlmanacMap, mapnames []string) int {
+	ret := 0
+	for _, s := range seed_ranges {
+		fmt.Printf("Processing range %d (%d entries)...", s.start, s.size)
+		count := 0
+		for i := s.start; i <= s.start+s.size; i++ {
+			val := i
+			for _, m := range mapnames {
+				//old_val := val
+				val = maps[m].get(val)
+				//fmt.Printf(" == %d -> %s -> %d\n", old_val, m, val)
+
+			}
+			if ret == 0 || val < ret {
+				ret = val
+			}
+			count++
+			if count > 1000000 {
+				fmt.Printf(".")
+				count = 0
+			}
+		}
+	}
+	return ret
+}
+
 func main() {
 	lines := getFileLines("input.txt")
 
-	seeds := getSeedList(lines[0])
+	seeds := getSimpleSeedList(lines[0])
+	range_seeds := getRangedSeedList(lines[0])
+	fmt.Printf("Ranged seed list includes %d seeds.\n", len(range_seeds))
 
 	mapnames := []string{
 		"seed-to-soil",
@@ -116,21 +176,6 @@ func main() {
 		maps[m] = getMap(lines, &m)
 	}
 
-	fmt.Println("")
-
-	min_loc := 0
-	for _, s := range seeds {
-		val := s
-		for _, m := range mapnames {
-			old_val := val
-			val = maps[m].get(val)
-			fmt.Printf(" == %d -> %s -> %d\n", old_val, m, val)
-
-		}
-		if min_loc == 0 || val < min_loc {
-			min_loc = val
-		}
-		fmt.Printf("Seed %d goes in location %d\n", s, val)
-	}
-	fmt.Printf("Closest Location: %d\n", min_loc)
+	fmt.Printf("Part 1: %d\n", getClosestLocationList(seeds, maps, mapnames))
+	fmt.Printf("Part 2: %d\n", getClosestLocationRange(range_seeds, maps, mapnames))
 }
