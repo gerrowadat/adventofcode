@@ -66,7 +66,7 @@ func (m *Mem) Cycle() {
 	m.CycleCount++
 }
 
-func (m *Mem) CycleUntilLoop() {
+func (m *Mem) CycleUntilLoop() int {
 	for {
 		m.Cycle()
 
@@ -80,7 +80,7 @@ func (m *Mem) CycleUntilLoop() {
 				match = true
 			}
 			if match {
-				return
+				return m.CycleCount - (i + 1)
 			}
 		}
 	}
@@ -108,7 +108,8 @@ func main() {
 	fmt.Printf("Banks (%d): %v\n", len(banks), banks)
 
 	mem := NewMem(banks)
-	mem.CycleUntilLoop()
+	looplength := mem.CycleUntilLoop()
 	fmt.Printf("Part 1: %d\n", mem.CycleCount)
+	fmt.Printf("Part 2: %d\n", looplength)
 
 }
