@@ -28,3 +28,19 @@ func GetFileLines(filename string) (ret []string, err error) {
 
 	return strings.Split(string(content), "\n"), nil
 }
+
+func GetFileLinesAsInts(fileName string) ([]int, error) {
+	lines, err := GetFileLines(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	ints := make([]int, len(lines))
+	for i, line := range lines {
+		ints[i], err = strconv.Atoi(line)
+		if err != nil {
+			return nil, fmt.Errorf("Non-int on line %d: %v (%v)", i, line, err)
+		}
+	}
+	return ints, nil
+}
