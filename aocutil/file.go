@@ -13,6 +13,10 @@ func GetFileNumber(filename string) (ret int, err error) {
 		return 0, err
 	}
 
+	if len(content) != 1 {
+		return 0, fmt.Errorf("File %v does not contain a single line", filename)
+	}
+
 	return strconv.Atoi(content[0])
 }
 
@@ -22,6 +26,5 @@ func GetFileLines(filename string) (ret []string, err error) {
 		return nil, fmt.Errorf("Error reading %v : %v\n", filename, err)
 	}
 
-	lines := strings.Split(string(content), "\n")
-	return lines[:len(lines)-1], nil
+	return strings.Split(string(content), "\n"), nil
 }
