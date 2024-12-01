@@ -33,4 +33,17 @@ func main() {
 	}
 
 	fmt.Println("Part 1: ", diff)
+
+	// Part 2
+	total_similarity := 0
+	for i := 0; i < len(left); i++ {
+		similarity := 0
+		for j := 0; j < len(right); j++ {
+			if left[i] == right[j] {
+				similarity++
+			}
+		}
+		total_similarity += (left[i] * similarity)
+	}
+	fmt.Printf("Part 2: %d\n", total_similarity)
 }
