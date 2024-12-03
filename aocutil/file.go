@@ -68,3 +68,12 @@ func GetIntMatrixFromFile(fn, sep string) ([][]int, error) {
 	}
 	return ret, nil
 }
+
+func GetFileToString(filename string) (string, error) {
+	var content []byte
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return "", fmt.Errorf("error reading %v : %v", filename, err)
+	}
+	return string(content), nil
+}
