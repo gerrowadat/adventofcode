@@ -66,6 +66,31 @@ func WordSearch(r [][]rune, word string, p point) int {
 	return match_count
 }
 
+func CrossSearch(r [][]rune, p point) bool {
+	// Search from the 'A'
+	if r[p.y][p.x] != 'A' {
+		return false
+	}
+	// reject edge points.
+	if p.y == 0 || p.x == 0 || p.y == (len(r)-1) || p.x == (len(r[0])-1) {
+		return false
+	}
+
+	// Check for a diagonal 'MAS' or 'SAM' from the point 'up' and to the 'left' of the A
+	if !WordInPath(r, []rune("MAS"), point{y: p.y - 1, x: p.x - 1}, path{yinc: 1, xinc: 1}) &&
+		!WordInPath(r, []rune("SAM"), point{y: p.y - 1, x: p.x - 1}, path{yinc: 1, xinc: 1}) {
+		return false
+	}
+
+	// Same for the 'upper' 'right'.
+	if !WordInPath(r, []rune("MAS"), point{y: p.y - 1, x: p.x + 1}, path{yinc: 1, xinc: -1}) &&
+		!WordInPath(r, []rune("SAM"), point{y: p.y - 1, x: p.x + 1}, path{yinc: 1, xinc: -1}) {
+		return false
+	}
+
+	return true
+}
+
 func main() {
 	fmt.Println("Hello.")
 
@@ -82,4 +107,15 @@ func main() {
 		}
 	}
 	fmt.Println("Part 1: ", xmascount)
+
+	crossmas_count := 0
+	for y := 0; y < len(r); y++ {
+		for x := 0; x < len(r[y]); x++ {
+			if CrossSearch(r, point{x: x, y: y}) {
+				crossmas_count++
+			}
+		}
+	}
+
+	fmt.Println("Part 2: ", crossmas_count)
 }
