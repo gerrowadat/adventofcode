@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -15,29 +16,53 @@ type rule struct {
 	r int
 }
 
-func UpdateFollowsRule(u []int, rl rule) bool {
+type pair [2]int
+
+func UpdateFollowsRule(u []int, rl rule) (bool, pair) {
 	l := slices.Index(u, rl.l)
 	r := slices.Index(u, rl.r)
 
 	if l == -1 || r == -1 {
-		return true
+		return true, pair{}
 	}
 
 	if l > r {
-		return false
+		return false, pair{l, r}
 	}
 
-	return true
+	return true, pair{}
 }
 
 func UpdateFollowsRules(u []int, r []rule) bool {
 
 	for i := range r {
-		if !UpdateFollowsRule(u, r[i]) {
+		if follows, _ := UpdateFollowsRule(u, r[i]); !follows {
 			return false
 		}
 	}
 	return true
+}
+
+func DetermineOrder(u []int, r []rule) []int {
+	ret := make([]int, len(u))
+	copy(ret, u)
+	swapE := reflect.Swapper(ret)
+	//fmt.Printf("Doing: %v\n", ret)
+	// Until we're folowing the rules, iterate through our rules and swap pairs that don't comply.
+	for !UpdateFollowsRules(ret, r) {
+		for i := range r {
+			for {
+				f, p := UpdateFollowsRule(ret, r[i])
+				if f {
+					break
+				}
+				//fmt.Printf(" - Swapping #%d[%d] and #%d[%d]\n", p[0], ret[p[0]], p[1], ret[p[1]])
+				swapE(p[0], p[1])
+				//fmt.Printf(" - now [%v]\n", ret)
+			}
+		}
+	}
+	return ret
 }
 
 func main() {
@@ -91,5 +116,15 @@ func main() {
 	}
 
 	fmt.Println("Part 1: ", middlesum)
+
+	othermiddlesum := 0
+	for i := range updates {
+		if !UpdateFollowsRules(updates[i], rules) {
+			new_order := DetermineOrder(updates[i], rules)
+			othermiddlesum += new_order[len(new_order)/2]
+		}
+	}
+
+	fmt.Println("Part 2:", othermiddlesum)
 
 }
