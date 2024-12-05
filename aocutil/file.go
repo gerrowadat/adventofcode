@@ -69,6 +69,18 @@ func GetIntMatrixFromFile(fn, sep string) ([][]int, error) {
 	return ret, nil
 }
 
+func GetRuneMatrixFromFile(fn string) ([][]rune, error) {
+	lines, err := GetFileLines(fn)
+	ret := [][]rune{}
+	if err != nil {
+		return nil, err
+	}
+	for _, l := range lines {
+		ret = append(ret, []rune(l))
+	}
+	return ret, nil
+}
+
 func GetFileToString(filename string) (string, error) {
 	var content []byte
 	content, err := os.ReadFile(filename)
