@@ -29,25 +29,42 @@ type Map struct {
 	g       Guard
 	visited []Point
 	turns   []Turn
+	// The added obstacle
+	obstacle Point
 }
 
 func NewMap(r [][]rune) Map {
 	// copy the grid, populatethe Guard struct
-	var g Guard
 	grid := make([][]rune, len(r))
-
 	for i := 0; i < len(r); i++ {
 		grid[i] = append([]rune(nil), r[i]...)
-		for j := 0; j < len(r[0]); j++ {
-			if r[i][j] == '^' {
-				g.pos = Point{y: i, x: j}
+	}
+
+	ret := Map{grid: grid}
+	ret.Reset()
+	return ret
+}
+
+func (m *Map) FindGuard() Guard {
+	ret := Guard{}
+	for i := 0; i < len(m.grid); i++ {
+		for j := 0; j < len(m.grid[0]); j++ {
+			if m.grid[i][j] == '^' {
+				ret.pos = Point{y: i, x: j}
 				// guards always face north (for now)
-				g.facing = 1
+				ret.facing = 1
 			}
 		}
 	}
-	visited := []Point{g.pos}
-	return Map{grid: grid, g: g, visited: visited, turns: []Turn{}}
+	m.g = ret
+	return ret
+}
+
+func (m *Map) Reset() {
+	m.FindGuard()
+	m.Visit(m.g.pos)
+	m.turns = []Turn{}
+	m.obstacle = Point{}
 }
 
 func (m *Map) String() string {
@@ -76,20 +93,34 @@ func (m *Map) Visit(p Point) {
 
 func (m *Map) NextRune() rune {
 	// Return the rune in front of the guard (or 0 if the edge)
+	p := m.NextPoint()
+	if p.x == m.obstacle.x && p.y == m.obstacle.y {
+		return '#'
+	}
+	return m.grid[p.y][p.x]
+}
+
+func (m *Map) NextPoint() *Point {
+	ret := Point{}
+
 	if m.GuardExiting() {
-		return 0
+		return nil
 	}
 	switch m.g.facing {
 	case 1:
-		return m.grid[m.g.pos.y-1][m.g.pos.x]
+		ret.x = m.g.pos.x
+		ret.y = m.g.pos.y - 1
 	case 2:
-		return m.grid[m.g.pos.y][m.g.pos.x+1]
+		ret.x = m.g.pos.x + 1
+		ret.y = m.g.pos.y
 	case 3:
-		return m.grid[m.g.pos.y+1][m.g.pos.x]
+		ret.x = m.g.pos.x
+		ret.y = m.g.pos.y + 1
 	case 4:
-		return m.grid[m.g.pos.y][m.g.pos.x-1]
+		ret.x = m.g.pos.x - 1
+		ret.y = m.g.pos.y
 	}
-	return 0
+	return &ret
 }
 
 func (m *Map) MoveGuard() {
@@ -127,8 +158,9 @@ func (m *Map) MoveGuard() {
 func (m *Map) Looping() bool {
 	// Find a past occurance of our most recent turn, and see if there's a loop since we were last here.
 	loopturns := []int{}
+	last := m.turns[len(m.turns)-1]
 	for i := 0; i < len(m.turns); i++ {
-		if m.turns[i] == m.turns[len(m.turns)-1] {
+		if m.turns[i].pos.x == last.pos.x && m.turns[i].pos.y == last.pos.y && m.turns[i].new_facing == last.new_facing {
 			loopturns = append(loopturns, i)
 		}
 	}
@@ -137,20 +169,27 @@ func (m *Map) Looping() bool {
 		return false
 	}
 
-	loop1 := m.turns[loopturns[len(loopturns)-2]:loopturns[len(loopturns)-1]]
-	loop2 := m.turns[loopturns[len(loopturns)-3]:loopturns[len(loopturns)-2]]
+	//loop1 := m.turns[loopturns[len(loopturns)-2]:loopturns[len(loopturns)-1]]
+	loop1 := m.turns[loopturns[len(loopturns)-2]:]
+	loop2 := m.turns[loopturns[len(loopturns)-3] : loopturns[len(loopturns)-2]+1]
 
 	if len(loop1) != len(loop2) {
 		return false
 	}
 
+	loopmatch := true
 	for i := 0; i < len(loop1); i++ {
 		if loop1[i].pos.x != loop2[i].pos.x || loop1[i].pos.y != loop2[i].pos.y || loop1[i].new_facing != loop2[i].new_facing {
-			return false
+			loopmatch = false
 		}
 	}
+	/*
+		if loopmatch {
+			fmt.Printf("Loop size of %d found on turn %v (%v) [turns: %v]\n", len(loop1)-1, last, loop1, loopturns)
+		}
+	*/
 
-	return true
+	return loopmatch
 }
 
 func (m *Map) GuardExiting() bool {
@@ -176,16 +215,13 @@ func (m *Map) GuardExiting() bool {
 	return false
 }
 
-func (m *Map) NewObstacleLoops(p Point, itercount int) bool {
-	m.grid[p.y][p.x] = '#'
+func (m *Map) NewObstacleLoops(itercount int) bool {
 	for i := 0; i < itercount; i++ {
 		if m.GuardExiting() {
-			m.grid[p.y][p.x] = '.'
 			return false
 		}
 		m.MoveGuard()
 	}
-	m.grid[p.y][p.x] = '.'
 	return m.Looping()
 }
 
@@ -193,16 +229,15 @@ func FindLoopingObstacles(r [][]rune) []Point {
 	// Post-note: It's more efficient to track duplicate turns as we go and halt when we hit a loop,
 	// but here we all are.
 	m := NewMap(r)
-	g := Guard{pos: Point{x: m.g.pos.x, y: m.g.pos.y}, facing: m.g.facing}
 
 	ret := []Point{}
 	for y := 0; y < len(m.grid); y++ {
 		for x := 0; x < len(m.grid[0]); x++ {
 			if m.grid[y][x] == '.' {
-				// Reset the guard, run 100 iterations, see if there's a loop.
-				m.g = g
-				// Fun note for future Dave, we seem to find fewer loops the more iterations we do, so there's some stupid bug somewhere and maybe someday I'll find it.
-				if m.NewObstacleLoops(Point{x: x, y: y}, 100) {
+				// Reset the Map, run 100 iterations, see if there's a loop.
+				m.Reset()
+				m.obstacle = Point{y: y, x: x}
+				if m.NewObstacleLoops(1000) {
 					ret = append(ret, Point{x: x, y: y})
 				}
 			}
@@ -213,7 +248,7 @@ func FindLoopingObstacles(r [][]rune) []Point {
 
 func main() {
 	fmt.Println("Hello.")
-	runes, err := aocutil.GetRuneMatrixFromFile("input.txt")
+	runes, err := aocutil.GetRuneMatrixFromFile(os.Args[1])
 	if err != nil {
 		fmt.Println("Read file: ", err)
 		os.Exit(1)
