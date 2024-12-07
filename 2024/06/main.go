@@ -139,16 +139,21 @@ func (m *Map) MoveGuard() {
 	}
 
 	// Last, switch facing if we're facing an obstacle.
-	if !m.GuardExiting() && m.NextRune() == '#' {
-		if m.g.facing == 4 {
-			m.g.facing = 1
-		} else {
-			m.g.facing++
+	if !m.GuardExiting() {
+		turning := false
+		for m.NextRune() == '#' {
+			turning = true
+			if m.g.facing == 4 {
+				m.g.facing = 1
+			} else {
+				m.g.facing++
+			}
 		}
-		// Store our facing
-		turn := Turn{pos: Point{y: m.g.pos.y, x: m.g.pos.x}, new_facing: m.g.facing}
-		m.turns = append(m.turns, turn)
-
+		if turning {
+			// Store our facing
+			turn := Turn{pos: Point{y: m.g.pos.y, x: m.g.pos.x}, new_facing: m.g.facing}
+			m.turns = append(m.turns, turn)
+		}
 	}
 
 	// Mark our new location as visited
