@@ -19,6 +19,7 @@ type Operation int
 const (
 	AddOperation Operation = iota
 	MultiplyOperation
+	ConcatenateOperation
 )
 
 func GenerateOperations(ops []Operation, operands int) [][]Operation {
@@ -69,6 +70,14 @@ func Op(l, r int, op Operation) int {
 		return l + r
 	case MultiplyOperation:
 		return l * r
+	case ConcatenateOperation:
+		concat_str := strconv.Itoa(l) + strconv.Itoa(r)
+		concat, err := strconv.Atoi(concat_str)
+		if err != nil {
+			fmt.Printf("Can't concatenate %d and %d\n", l, r)
+			os.Exit(4)
+		}
+		return concat
 	}
 	fmt.Printf("Unknown operation %d", op)
 	return 0
@@ -96,8 +105,7 @@ func (e *Equation) OpResult(ops []Operation) int {
 	return ret
 }
 
-func (e *Equation) IsSoluble() bool {
-	valid_ops := []Operation{AddOperation, MultiplyOperation}
+func (e *Equation) IsSoluble(valid_ops []Operation) bool {
 	for _, ops := range GenerateOperations(valid_ops, len(e.operands)) {
 		if e.OpResult(ops) == e.result {
 			return true
@@ -128,11 +136,16 @@ func main() {
 	fmt.Printf("Read %d Equations\n", len(eqs))
 
 	testvals := 0
+	testvalsiphants := 0
 	for _, e := range eqs {
-		if e.IsSoluble() {
+		if e.IsSoluble([]Operation{AddOperation, MultiplyOperation}) {
 			testvals += e.result
+		}
+		if e.IsSoluble([]Operation{AddOperation, MultiplyOperation, ConcatenateOperation}) {
+			testvalsiphants += e.result
 		}
 	}
 
 	fmt.Println("Part 1:", testvals)
+	fmt.Println("Part 2:", testvalsiphants)
 }
