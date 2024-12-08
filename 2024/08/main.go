@@ -38,28 +38,37 @@ func WithinGrid(g [][]rune, p Point) bool {
 }
 
 func GetAntinodesForPair(g [][]rune, p Pair, resonance bool) []Point {
-	ret := []Point{}
 	ydiff := p[0].y - p[1].y
 	xdiff := p[0].x - p[1].x
 
-	var x1, y1, x2, y2 int
+	res := 1
 
-	y1 = p[0].y + ydiff
-	y2 = p[1].y - ydiff
+	ret := []Point{}
 
-	x1 = p[0].x + xdiff
-	x2 = p[1].x - xdiff
-
-	possibles := []Point{
-		{x: x1, y: y1},
-		{x: x2, y: y2},
+	if resonance {
+		ret = append(ret, p[0])
+		ret = append(ret, p[1])
 	}
 
-	for _, poss := range possibles {
-		if WithinGrid(g, poss) {
-			ret = append(ret, poss)
+	for {
+		// Are both resonating antonodes out of the grid?
+		oob := true
+		up := Point{x: p[0].x + (res * xdiff), y: p[0].y + (res * ydiff)}
+		down := Point{x: p[1].x - (res * xdiff), y: p[1].y - (res * ydiff)}
+		if WithinGrid(g, up) {
+			ret = append(ret, up)
+			oob = false
 		}
+		if WithinGrid(g, down) {
+			ret = append(ret, down)
+			oob = false
+		}
+		if oob || !resonance {
+			break
+		}
+		res += 1
 	}
+
 	return ret
 }
 
@@ -106,6 +115,24 @@ func GetAntinodes(g [][]rune, a []Antenna, resonance bool) []Point {
 	return ret
 }
 
+func PrintGrid(grid [][]rune, an []Point) string {
+
+	for _, aan := range an {
+		grid[aan.y][aan.x] = '#'
+	}
+
+	gg := ""
+
+	for i := range grid {
+		for j := range grid[0] {
+			gg += string(grid[i][j])
+		}
+		gg += "\n"
+	}
+	return gg
+
+}
+
 func main() {
 	fmt.Println("Hello.")
 	grid, err := aocutil.GetRuneMatrixFromFile(os.Args[1])
@@ -124,23 +151,5 @@ func main() {
 	an = GetAntinodes(grid, a, true)
 	fmt.Printf("Part 2: %d\n", len(an))
 
-	fmt.Println(PrintGrid(grid, an))
-}
-
-func PrintGrid(grid [][]rune, an []Point) string {
-
-	for _, aan := range an {
-		grid[aan.y][aan.x] = '#'
-	}
-
-	gg := ""
-
-	for i := range grid {
-		for j := range grid[0] {
-			gg += string(grid[i][j])
-		}
-		gg += "\n"
-	}
-	return gg
-
+	//fmt.Println(PrintGrid(grid, an))
 }
