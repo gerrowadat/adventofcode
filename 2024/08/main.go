@@ -32,7 +32,12 @@ func GetAntennae(g [][]rune) []Antenna {
 	return ret
 }
 
-func GetAntinodesForPair(g [][]rune, p Pair) []Point {
+func WithinGrid(g [][]rune, p Point) bool {
+
+	return (p.x >= 0 && p.x < len(g[0])) && (p.y >= 0 && p.y < len(g))
+}
+
+func GetAntinodesForPair(g [][]rune, p Pair, resonance bool) []Point {
 	ret := []Point{}
 	ydiff := max(p[0].y-p[1].y, p[1].y-p[0].y)
 	xdiff := max(p[0].x-p[1].x, p[1].x-p[0].x)
@@ -56,7 +61,7 @@ func GetAntinodesForPair(g [][]rune, p Pair) []Point {
 	}
 
 	for _, poss := range possibles {
-		if (poss.x >= 0 && poss.x < len(g[0])) && (poss.y >= 0 && poss.y < len(g)) {
+		if WithinGrid(g, poss) {
 			ret = append(ret, poss)
 		}
 	}
@@ -91,10 +96,10 @@ func GetPairs(antennae []Antenna) []Pair {
 	return ret
 }
 
-func GetAntinodes(g [][]rune, a []Antenna) []Point {
+func GetAntinodes(g [][]rune, a []Antenna, resonance bool) []Point {
 	raw := []Point{}
 	for _, pair := range GetPairs(a) {
-		raw = append(raw, GetAntinodesForPair(g, pair)...)
+		raw = append(raw, GetAntinodesForPair(g, pair, resonance)...)
 	}
 	ret := []Point{}
 	// De-duplicate antinodes
@@ -118,11 +123,13 @@ func main() {
 
 	fmt.Printf("Found %d Antennae.\n", len(a))
 
-	an := GetAntinodes(grid, a)
-
+	an := GetAntinodes(grid, a, false)
 	fmt.Printf("Part 1: %d\n", len(an))
 
-	fmt.Println(PrintGrid(grid, an))
+	an = GetAntinodes(grid, a, true)
+	fmt.Printf("Part 2: %d\n", len(an))
+
+	//fmt.Println(PrintGrid(grid, an))
 
 }
 
