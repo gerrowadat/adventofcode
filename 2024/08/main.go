@@ -39,21 +39,16 @@ func WithinGrid(g [][]rune, p Point) bool {
 
 func GetAntinodesForPair(g [][]rune, p Pair, resonance bool) []Point {
 	ret := []Point{}
-	ydiff := max(p[0].y-p[1].y, p[1].y-p[0].y)
-	xdiff := max(p[0].x-p[1].x, p[1].x-p[0].x)
+	ydiff := p[0].y - p[1].y
+	xdiff := p[0].x - p[1].x
 
 	var x1, y1, x2, y2 int
 
-	y1 = min(p[0].y, p[1].y) - ydiff
-	y2 = max(p[0].y, p[1].y) + ydiff
+	y1 = p[0].y + ydiff
+	y2 = p[1].y - ydiff
 
-	if p[0].x < p[1].x {
-		x1 = p[0].x - xdiff
-		x2 = p[1].x + xdiff
-	} else {
-		x1 = p[0].x + xdiff
-		x2 = p[1].x - xdiff
-	}
+	x1 = p[0].x + xdiff
+	x2 = p[1].x - xdiff
 
 	possibles := []Point{
 		{x: x1, y: y1},
@@ -129,8 +124,7 @@ func main() {
 	an = GetAntinodes(grid, a, true)
 	fmt.Printf("Part 2: %d\n", len(an))
 
-	//fmt.Println(PrintGrid(grid, an))
-
+	fmt.Println(PrintGrid(grid, an))
 }
 
 func PrintGrid(grid [][]rune, an []Point) string {
