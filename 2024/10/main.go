@@ -195,6 +195,10 @@ func (h *Trailhead) Score() int {
 	return ret
 }
 
+func (h *Trailhead) Rating() int {
+	return len(h.paths)
+}
+
 func main() {
 	fmt.Println("Hello.")
 	grid, err := GetIntMatrixFromFile(os.Args[1], "")
@@ -225,12 +229,16 @@ func main() {
 		*/
 	}
 
-	tot := 0
+	totscore := 0
+	totrating := 0
+
 	for i := range heads {
 		//fmt.Printf("Head: [%d,%d] %d paths\n", heads[i].start.x, heads[i].start.y, heads[i].Score())
-		tot += heads[i].Score()
+		totscore += heads[i].Score()
+		totrating += heads[i].Rating()
 	}
 
-	fmt.Println("Part 1: ", tot)
+	fmt.Println("Part 1: ", totscore)
+	fmt.Println("Part 2: ", totrating)
 
 }
