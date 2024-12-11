@@ -58,11 +58,15 @@ func GetIntMatrixFromFile(fn, sep string) ([][]int, error) {
 		fragments := strings.Split(l, sep)
 		row := []int{}
 		for _, f := range fragments {
-			elem, err := strconv.Atoi(f)
-			if err != nil {
-				return nil, err
+			if f == "." {
+				row = append(row, -1)
+			} else {
+				elem, err := strconv.Atoi(f)
+				if err != nil {
+					return nil, err
+				}
+				row = append(row, elem)
 			}
-			row = append(row, elem)
 		}
 		ret = append(ret, row)
 	}
