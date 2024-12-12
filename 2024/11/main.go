@@ -8,93 +8,43 @@ import (
 	"github.com/gerrowadat/adventofcode/aocutil"
 )
 
-type Node struct {
-	data int
-	next *Node
-}
-
-func NewNode(data int) Node {
-	return Node{data: data, next: nil}
-}
-
 type Stones struct {
-	head *Node
+	s          map[int]int
+	splitcache map[int][2]int
 }
 
-func NewStones() Stones {
-	return Stones{head: nil}
-}
+func NewStones(l []int) Stones {
+	ret := Stones{s: map[int]int{}, splitcache: map[int][2]int{}}
+	for i := range l {
+		IncMap(ret.s, l[i], 1)
 
-func (s *Stones) InsertAtEnd(newn Node) {
-	if s.head == nil {
-		s.head = &newn
-		return
 	}
-
-	n := s.head
-	for n.next != nil {
-		n = n.next
-	}
-	n.next = &newn
-}
-
-func (s *Stones) String() string {
-	ret := ""
-	if s.head != nil {
-		ret += fmt.Sprintf("%d", s.head.data)
-	}
-	n := s.head.next
-
-	for n != nil {
-		ret += fmt.Sprintf(" -> %d", n.data)
-		n = n.next
-	}
-
 	return ret
 }
 
-func ExpandStones(data int) Stones {
-	ret := NewStones()
-	if data == 0 {
-		ret.InsertAtEnd(NewNode(1))
-		return ret
-	}
-	data_str := fmt.Sprintf("%d", data)
-	if len(data_str)%2 == 0 {
-		s1, err := strconv.Atoi(data_str[0 : len(data_str)/2])
-		if err != nil {
-			fmt.Printf("Weird: %s\n", data_str)
-			os.Exit(1)
-		}
-		s2, err := strconv.Atoi(data_str[len(data_str)/2:])
-		if err != nil {
-			fmt.Printf("Weird: %s\n", data_str)
-			os.Exit(1)
-		}
-		ret.InsertAtEnd(NewNode(s1))
-		ret.InsertAtEnd(NewNode(s2))
-		return ret
+func IncMap(s map[int]int, stoneval int, inc int) {
+	if _, ok := s[stoneval]; !ok {
+		s[stoneval] = inc
 	} else {
-		ret.InsertAtEnd(NewNode(data * 2024))
-		return ret
+		s[stoneval] += inc
 	}
 }
 
 func (s *Stones) Blink() {
-	c := s.head
-
-	for c != nil {
-		if c.data == 0 {
-			c.data = 1
-			c = c.next
+	new_s := map[int]int{}
+	for k, v := range s.s {
+		//fmt.Println(k, v)
+		if k == 0 {
+			IncMap(new_s, 1, v)
 			continue
 		}
-		data_str := fmt.Sprintf("%d", c.data)
-		if len(data_str)%2 != 0 {
-			// odd number of digits
-			c.data = c.data * 2024
-		} else {
-			// even number of digits
+		if split, ok := s.splitcache[k]; ok {
+			IncMap(new_s, split[0], v)
+			IncMap(new_s, split[1], v)
+			continue
+		}
+		data_str := fmt.Sprintf("%d", k)
+		if len(data_str)%2 == 0 {
 			s1, err := strconv.Atoi(data_str[0 : len(data_str)/2])
 			if err != nil {
 				fmt.Printf("Weird: %s\n", data_str)
@@ -104,28 +54,22 @@ func (s *Stones) Blink() {
 			if err != nil {
 				fmt.Printf("Weird: %s\n", data_str)
 				os.Exit(1)
+
 			}
-			c.data = s1
-			old_next := c.next
-			new_next := NewNode(s2)
-			c.next = &new_next
-			c.next.next = old_next
-			c = &new_next
+			IncMap(new_s, s1, v)
+			IncMap(new_s, s2, v)
+			s.splitcache[k] = [2]int{s1, s2}
+		} else {
+			IncMap(new_s, k*2024, v)
 		}
-		c = c.next
 	}
+	s.s = new_s
 }
 
 func (s *Stones) Len() int {
-	if s.head == nil {
-		return 0
-	}
-	n := s.head
 	ret := 0
-
-	for n != nil {
-		ret++
-		n = n.next
+	for _, v := range s.s {
+		ret += v
 	}
 	return ret
 }
@@ -138,16 +82,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	s := NewStones()
-
-	for i := range lines[0] {
-		s.InsertAtEnd(NewNode(lines[0][i]))
-	}
+	s := NewStones(lines[0])
 
 	for range 25 {
 		s.Blink()
 		//fmt.Println(s.String())
 	}
 	fmt.Println("Part 1: ", s.Len())
+
+	for range 50 {
+		s.Blink()
+	}
+
+	fmt.Println("Part 2: ", s.Len())
 
 }
