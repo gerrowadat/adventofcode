@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"strconv"
+	"slices"
 
 	"github.com/gerrowadat/adventofcode/aocutil"
 )
@@ -25,7 +26,7 @@ func RangeFromString(in string) *Range {
 	return &Range{ start: start, end: end }
 }
 
-func (r *Range) InvalidIDs() []int {
+func (r *Range) SimpleInvalidIDs() []int {
 	ret := []int{}
 	for i := r.start; i <= r.end; i++ {
 		istr := strconv.Itoa(i)
@@ -38,6 +39,38 @@ func (r *Range) InvalidIDs() []int {
 	return ret
 }
 
+func RepeatsFirst(in string, count int) bool {
+	if len(in) % count != 0 {
+		return false
+	}
+	for i := 0; i < len(in); i += count {
+		end := i + count
+		if end > len(in) {
+			end = len(in)
+		}
+		if in[:count] != in[i:end] {
+			return false
+		}
+	}
+	return true
+}
+
+func (r *Range) SlightlyMoreComplicatedInvalidIDs() []int {
+	ret := []int{}
+	for i := r.start; i <= r.end; i++ {
+		istr := strconv.Itoa(i)
+
+		// Take a slice of size 1 to half the string, see if it repeats.
+		for replen := 1; replen <= len(istr)/2; replen++ {
+			if RepeatsFirst(istr, replen) {
+				if !slices.Contains(ret, i) {
+					ret = append(ret, i)
+				}
+			}
+		}
+	}
+	return ret
+}
 
 func main() {
 	fmt.Println("Hello.")
@@ -49,13 +82,18 @@ func main() {
 
 	rangestrs := strings.Split(lines[0], ",")
 
-	invalid_total := 0
+	simple_total := 0
+	slightlymorecomplicated_total := 0
 	for _, rs := range rangestrs {
 		r := RangeFromString(rs)
-		for _, inv := range r.InvalidIDs() {
-			invalid_total += inv
+		for _, inv := range r.SimpleInvalidIDs() {
+			simple_total += inv
+		}
+		for _, inv := range r.SlightlyMoreComplicatedInvalidIDs() {
+			slightlymorecomplicated_total += inv
 		}
 	}
-	fmt.Printf("Part 1: %v\n", invalid_total)
+	fmt.Printf("Part 1: %v\n", simple_total)
+	fmt.Printf("Part 2: %v\n", slightlymorecomplicated_total)
 
 }
